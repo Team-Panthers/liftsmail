@@ -40,12 +40,10 @@ jobs:
 
       - name: Prepare database
         run: |
-          cd src
           python manage.py migrate --noinput
       
       - name: Run tests
         run: |
-            cd src
             python manage.py test users.tests
 
       - name: Collect test artifacts
