@@ -48,7 +48,7 @@ jobs:
 
       - name: Debug directory contents
         run: |
-          ls -l users/tests/test_results
+          ls -l /users/tests/test_results
 
       - name: Collect test artifacts
         if: always()
