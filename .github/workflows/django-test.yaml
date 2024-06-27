@@ -46,6 +46,10 @@ jobs:
         run: |
             python manage.py test users/tests
 
+      - name: Debug directory contents
+        run: |
+          ls -l users/tests/test_results
+
       - name: Collect test artifacts
         if: always()
         uses: actions/upload-artifact@v2
