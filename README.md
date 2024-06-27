@@ -34,11 +34,11 @@ Liftsmail is a simple, efficient, and reliable bulk email sender software design
 
 # Contributing
 
-Please see the CONTRIBUTING.md file for more information.
+Please see the [CONTRIBUTING.md](https://github.com/Team-Panthers/liftsmail/blob/main/CONTRIBUTING.md) file for more information.
 
 
 # License
 
-This project is licensed under the MIT License. See the LICENSE file for details.
+This project is licensed under the [MIT License](https://github.com/Team-Panthers/liftsmail/blob/main/LICENSE). See the LICENSE file for details.
 
 

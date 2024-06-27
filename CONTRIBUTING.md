@@ -8,7 +8,7 @@
 - Clone your forked repository to your local machine
   
   ```
-      git clone https://github.com/your-username/liftsmail.git
+      git clone https://github.com/Team-Panthers/liftsmail.git
       cd liftsmail
   ```
 
