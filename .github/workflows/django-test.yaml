@@ -44,7 +44,7 @@ jobs:
       
       - name: Run tests
         run: |
-            python manage.py test users.tests
+            python manage.py test users/tests
 
       - name: Collect test artifacts
         if: always()
@@ -52,4 +52,4 @@ jobs:
         with:
           name: test-results
           path: |
-            src/users/tests/test_results
+            users/tests/test_results
