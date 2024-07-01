@@ -1,4 +1,4 @@
-name: Django Test with PostgreSQL Example
+name: Tests with PostgreSQL
 
 on:
     workflow_call:
@@ -10,21 +10,20 @@ on:
 
 jobs:
   test:
-    name: Run Custom user model tests
+    name: Run Tests
     runs-on: ubuntu-latest
 
     services:
       postgres:
-        image: postgres:13  # Adjust PostgreSQL version as needed
+        image: postgres:13
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: test_db
         ports:
-          - 5432:5432  # Expose PostgreSQL port
+          - 5432:5432
 
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: Checkout code
         uses: actions/checkout@v2
       
@@ -44,16 +43,4 @@ jobs:
       
       - name: Run tests
         run: |
-            python manage.py test users/tests
-
-      - name: Debug directory contents
-        run: |
-          ls -l /users/tests/test_results
-
-      - name: Collect test artifacts
-        if: always()
-        uses: actions/upload-artifact@v2
-        with:
-          name: test-results
-          path: |
-            users/tests/test_results
+            python manage.py test
