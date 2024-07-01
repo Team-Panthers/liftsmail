@@ -1,3 +1,4 @@
+from django.db import IntegrityError
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from users.models import CustomUser
@@ -46,3 +47,9 @@ class CustomUserModelTests(TestCase):
     def test_user_is_verified_default_false(self):
         user = CustomUser(email='test@example.com')
         self.assertFalse(user.is_verified)
+
+    def test_user_email_is_unique(self):
+            user1 = CustomUser.objects.create_user(email='test@example.com', password='password123')
+
+            with self.assertRaises(IntegrityError):
+                user2 = CustomUser.objects.create_user(email='test@example.com', password='password123')
