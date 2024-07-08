@@ -67,3 +67,27 @@ class TokenTests(APITestCase):
 
         self.assertEqual(refresh_response.status_code, status.HTTP_200_OK)
         self.assertIn('access', refresh_response.data)
+
+
+class PasswordResetViewTests(APITestCase):
+    def setUp(self):
+        self.password_reset_url = reverse('password_reset')
+        self.user = get_user_model().objects.create_user(
+            email='testuser@example.com', password='testpassword123'
+        )
+
+    def test_password_reset_success(self):
+        response = self.client.post(self.password_reset_url, {'email': 'testuser@example.com'})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['message'], 'Password reset link sent to your email')
+
+    def test_password_reset_user_does_not_exist(self):
+        response = self.client.post(self.password_reset_url, {'email': 'nonexistent@example.com'})
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.data['error'], 'User with this email does not exist')
+
+    def test_password_reset_invalid_email(self):
+        response = self.client.post(self.password_reset_url, {'email': 'invalid-email'})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('email', response.data)
+

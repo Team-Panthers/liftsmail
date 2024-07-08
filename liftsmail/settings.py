@@ -37,6 +37,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'allauth',
+    'allauth.account',
+
     'rest_framework',
 
     'drf_yasg',
@@ -51,6 +54,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
 ]
 
 ROOT_URLCONF = 'liftsmail.urls'
@@ -72,6 +76,28 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'liftsmail.wsgi.application'
+
+AUTHENTICATION_BACKENDS = [
+    # Needed to login by username in Django admin, regardless of `allauth`
+    'django.contrib.auth.backends.ModelBackend',
+
+    # `allauth` specific authentication methods, such as login by email
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
+#Gmail settings
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'liftsmaildev@gmail.com'
+EMAIL_HOST_PASSWORD = 'qdoawklvciclrrlg'  
+DEFAULT_FROM_EMAIL = 'liftsmaildev@gmail.com'
+
+#allauth email settings
+ACCOUNT_EMAIL_SUBJECT_PREFIX = "Liftsmail "
+ACCOUNT_EMAIL_CONFIRMATION_COOLDOWN = 180
+
 
 
 # Database
