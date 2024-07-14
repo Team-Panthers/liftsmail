@@ -1,7 +1,12 @@
-from rest_framework import generics
-from .serializers import RegisterSerializer
-# Create your views here.
+from django.http import HttpResponseRedirect
+from liftsmail import settings
 
+def email_confirm_redirect(request, key):
+    return HttpResponseRedirect(
+        f"{settings.EMAIL_CONFIRM_REDIRECT_BASE_URL}{key}/"
+    )
 
-class RegisterView(generics.CreateAPIView):
-    serializer_class = RegisterSerializer
+def password_reset_confirm_redirect(request, uidb64, token):
+    return HttpResponseRedirect(
+        f"{settings.PASSWORD_RESET_CONFIRM_REDIRECT_BASE_URL}{uidb64}/{token}/"
+    )
