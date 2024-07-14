@@ -166,21 +166,3 @@ PASSWORD_RESET_CONFIRM_REDIRECT_BASE_URL = \
     "http://localhost:3000/password-reset/confirm/"
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-
-SOCIALACCOUNT_PROVIDERS = {
-    "google": {
-        "APP": {
-            "client_id": "",  
-            "secret": "<your google secret>",  
-            "key": "", 
-        },
-        "SCOPE": [
-            "profile",
-            "email",
-        ],
-        "AUTH_PARAMS": {
-            "access_type": "online",
-        },
-        "VERIFIED_EMAIL": True,
-    },
-}
