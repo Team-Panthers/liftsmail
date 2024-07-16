@@ -10,7 +10,10 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
+from datetime import timedelta
 from pathlib import Path
+import os
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -40,7 +43,6 @@ INSTALLED_APPS = [
     
     # 3rd party apps
     'rest_framework',
-    'rest_framework.authtoken',
     'dj_rest_auth',
     "allauth",
     "allauth.account",
@@ -89,12 +91,23 @@ WSGI_APPLICATION = 'liftsmail.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "nzksrilc",
+        "USER": "nzksrilc",
+        "PASSWORD": "TzaqUbD8aDjDgacJBQlAx8q-l8iio11M",
+        "HOST": "bubble.db.elephantsql.com",
     }
 }
+
 
 
 # Password validation
@@ -144,7 +157,7 @@ AUTH_USER_MODEL = "users.CustomUser"
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework.authentication.TokenAuthentication",
+        'dj_rest_auth.jwt_auth.JWTCookieAuthentication'
     ]
 }
 
@@ -163,11 +176,16 @@ ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
-ACCOUNT_EMAIL_VERIFICATION = "mandatory"
+ACCOUNT_EMAIL_VERIFICATION = 'optional'
 
 REST_AUTH = {
     'LOGIN_SERIALIZER': 'users.serializers.LoginSerializer', 
-    'REGISTER_SERIALIZER': 'users.serializers.CustomRegisterSerializer'
+    'REGISTER_SERIALIZER': 'users.serializers.CustomRegisterSerializer',
+    
+    'TOKEN_MODEL': None,
+
+    'USE_JWT': True,
+    'JWT_AUTH_HTTPONLY': False,
 }
 
 APPEND_SLASH=False
@@ -181,3 +199,8 @@ PASSWORD_RESET_CONFIRM_REDIRECT_BASE_URL = \
     "http://localhost:3000/password-reset/confirm/"
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=3),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=5),
+}
