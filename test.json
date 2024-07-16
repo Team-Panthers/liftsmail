@@ -1,0 +1,38 @@
+[
+    {
+      "email": "john.doe@example.com",
+      "first_name": "John",
+      "last_name": "Doe",
+      "is_subscribed": true,
+      "is_valid": true
+    },
+    {
+      "email": "jane.smith@example.com",
+      "first_name": "Jane",
+      "last_name": "Smith",
+      "is_subscribed": true,
+      "is_valid": true
+    },
+    {
+      "email": "jim.brown@example.com",
+      "first_name": "Jim",
+      "last_name": "Brown",
+      "is_subscribed": true,
+      "is_valid": true
+    },
+    {
+      "email": "alice.jones@example.com",
+      "first_name": "Alice",
+      "last_name": "Jones",
+      "is_subscribed": true,
+      "is_valid": true
+    },
+    {
+      "email": "bob.johnson@example.com",
+      "first_name": "Bob",
+      "last_name": "Johnson",
+      "is_subscribed": true,
+      "is_valid": true
+    }
+  ]
+  
