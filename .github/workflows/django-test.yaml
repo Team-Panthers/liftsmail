@@ -38,6 +38,12 @@ jobs:
             pip install -r requirements.txt
 
       - name: Prepare database
+        env:
+          POSTGRES_DB: test_db
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
         run: |
           python manage.py migrate --noinput
       
