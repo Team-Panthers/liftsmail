@@ -12,7 +12,7 @@ jobs:
   test:
     name: Run Tests
     runs-on: ubuntu-latest
-
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -28,14 +28,14 @@ jobs:
             pip install -r requirements.txt
 
       - name: Prepare database
-        run: |
-          python manage.py migrate --noinput
-      
-      - name: Run tests
         env:
           POSTGRES_DB: "nzksrilc"
           POSTGRES_USER: "nzksrilc"
           POSTGRES_PASSWORD: "TzaqUbD8aDjDgacJBQlAx8q-l8iio11M"
           POSTGRES_HOST: "bubble.db.elephantsql.com"
+        run: |
+          python manage.py migrate --noinput
+      
+      - name: Run tests
         run: |
             python manage.py test
