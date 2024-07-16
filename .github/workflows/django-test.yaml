@@ -12,7 +12,17 @@ jobs:
   test:
     name: Run Tests
     runs-on: ubuntu-latest
-    
+
+    services:
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        ports:
+          - 5432:5432
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -28,11 +38,6 @@ jobs:
             pip install -r requirements.txt
 
       - name: Prepare database
-        env:
-          POSTGRES_DB: "nzksrilc"
-          POSTGRES_USER: "nzksrilc"
-          POSTGRES_PASSWORD: "TzaqUbD8aDjDgacJBQlAx8q-l8iio11M"
-          POSTGRES_HOST: "bubble.db.elephantsql.com"
         run: |
           python manage.py migrate --noinput
       
