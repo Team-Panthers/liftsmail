@@ -12,17 +12,7 @@ jobs:
   test:
     name: Run Tests
     runs-on: ubuntu-latest
-
-    services:
-      postgres:
-        image: postgres:13
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: test_db
-        ports:
-          - 5432:5432
-
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -39,14 +29,18 @@ jobs:
 
       - name: Prepare database
         env:
-          POSTGRES_DB: test_db
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_HOST: localhost
-          POSTGRES_PORT: 5432
+          POSTGRES_DB: "nzksrilc"
+          POSTGRES_USER: "nzksrilc"
+          POSTGRES_PASSWORD: "TzaqUbD8aDjDgacJBQlAx8q-l8iio11M"
+          POSTGRES_HOST: "bubble.db.elephantsql.com"
         run: |
           python manage.py migrate --noinput
       
       - name: Run tests
+        env:
+          POSTGRES_DB: "nzksrilc"
+          POSTGRES_USER: "nzksrilc"
+          POSTGRES_PASSWORD: "TzaqUbD8aDjDgacJBQlAx8q-l8iio11M"
+          POSTGRES_HOST: "bubble.db.elephantsql.com"
         run: |
             python manage.py test

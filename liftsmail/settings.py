@@ -102,11 +102,10 @@ WSGI_APPLICATION = 'liftsmail.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('POSTGRES_DB', 'mydatabase'),
-        'USER': os.getenv('POSTGRES_USER', 'mydatabaseuser'),
-        'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'mypassword'),
-        'HOST': os.getenv('POSTGRES_HOST', 'localhost'),
-        'PORT': os.getenv('POSTGRES_PORT', '5432'),
+        'NAME': "nzksrilc",
+        'USER': "nzksrilc",
+        'PASSWORD':"TzaqUbD8aDjDgacJBQlAx8q-l8iio11M",
+        'HOST': "bubble.db.elephantsql.com",
     }
 }
 
