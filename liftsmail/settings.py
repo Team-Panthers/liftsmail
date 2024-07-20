@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     # installed apps
     'users.apps.UsersConfig',
     'emails.apps.EmailsConfig',
+    'payments.apps.PaymentsConfig',
 ]
 
 MIDDLEWARE = [
@@ -194,3 +195,6 @@ SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=3),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=5),
 }
+
+PAYSTACK_PUBLIC_KEY=os.environ.get('PAYSTACK_PUBLIC_KEY')
+PAYSTACK_PRIVATE_KEY=os.environ.get('PAYSTACK_PRIVATE_KEY')
