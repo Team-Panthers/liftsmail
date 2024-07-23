@@ -44,12 +44,13 @@ INSTALLED_APPS = [
     
     # 3rd party apps
     'rest_framework',
-    'dj_rest_auth',
-    "allauth",
-    "allauth.account",
-    "allauth.socialaccount",
-    "allauth.socialaccount.providers.google",
-    'dj_rest_auth.registration',
+    'djoser',
+    # 'dj_rest_auth',
+    # "allauth",
+    # "allauth.account",
+    # "allauth.socialaccount",
+    # "allauth.socialaccount.providers.google",
+    # 'dj_rest_auth.registration',
     'drf_yasg',
     
     # installed apps
@@ -66,7 +67,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    "allauth.account.middleware.AccountMiddleware",
 ]
 
 ROOT_URLCONF = 'liftsmail.urls'
@@ -93,22 +93,22 @@ WSGI_APPLICATION = 'liftsmail.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': "nzksrilc",
-        'USER': "nzksrilc",
-        'PASSWORD':"TzaqUbD8aDjDgacJBQlAx8q-l8iio11M",
-        'HOST': "bubble.db.elephantsql.com",
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': "nzksrilc",
+#         'USER': "nzksrilc",
+#         'PASSWORD':"TzaqUbD8aDjDgacJBQlAx8q-l8iio11M",
+#         'HOST': "bubble.db.elephantsql.com",
+#     }
+# }
 
 
 # Password validation
@@ -126,6 +126,15 @@ AUTH_PASSWORD_VALIDATORS = [
     },
     {
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+    },
+]
+
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'OPTIONS': {
+            'min_length': 5,
+        }
     },
 ]
 
@@ -158,7 +167,7 @@ AUTH_USER_MODEL = "users.CustomUser"
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ]
 }
@@ -173,36 +182,106 @@ SWAGGER_SETTINGS = {
     }
 }
 
-ACCOUNT_USER_MODEL_USERNAME_FIELD = None
-ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_USERNAME_REQUIRED = False
-ACCOUNT_UNIQUE_EMAIL = True
-ACCOUNT_AUTHENTICATION_METHOD = 'email'
-ACCOUNT_EMAIL_VERIFICATION = 'optional'
 
-REST_AUTH = {
-    'LOGIN_SERIALIZER': 'users.serializers.LoginSerializer', 
-    'REGISTER_SERIALIZER': 'users.serializers.CustomRegisterSerializer',
-    
+# Djoser settings
+DJOSER = {
+    'LOGIN_FIELD': 'email',
+    'SEND_ACTIVATION_EMAIL': True,
+    'SEND_CONFIRMATION_EMAIL': True,
+    'PASSWORD_CHANGED_EMAIL_CONFIRMATION':True,
     'TOKEN_MODEL': None,
-
-    'USE_JWT': True,
-    'JWT_AUTH_HTTPONLY': False,
+    'PASSWORD_RESET_SHOW_EMAIL_NOT_FOUND': True,
+    "ACTIVATION_URL": 'activate/{uid}/{token}',
+    "PASSWORD_RESET_CONFIRM_URL": '#/password-reset/{uid}/{token}',
+    'USERNAME_RESET_CONFIRM_URL': '/username-reset/{uid}/{token}',
+    'SERIALIZERS': 
+        {
+        'activation': 'djoser.serializers.ActivationSerializer',
+        'password_reset': 'djoser.serializers.SendEmailResetSerializer',
+        'password_reset_confirm': 'djoser.serializers.PasswordResetConfirmSerializer',
+        'password_reset_confirm_retype': 'djoser.serializers.PasswordResetConfirmRetypeSerializer',
+        'set_password': 'djoser.serializers.SetPasswordSerializer',
+        'set_password_retype': 'djoser.serializers.SetPasswordRetypeSerializer',
+        'set_username': 'djoser.serializers.SetUsernameSerializer',
+        'set_username_retype': 'djoser.serializers.SetUsernameRetypeSerializer',
+        'username_reset': 'djoser.serializers.SendEmailResetSerializer',
+        'username_reset_confirm': 'djoser.serializers.UsernameResetConfirmSerializer',
+        'username_reset_confirm_retype': 'djoser.serializers.UsernameResetConfirmRetypeSerializer',
+        'user_create': "users.serializers.UserCreateSerializer",
+        'user_create_password_retype': 'djoser.serializers.UserCreatePasswordRetypeSerializer',
+        'user_delete': 'djoser.serializers.UserDeleteSerializer',
+        'user': "users.serializers.UserCreateSerializer",
+        'current_user': "users.serializers.UserCreateSerializer",
+    }
 }
 
-APPEND_SLASH=False
-
-# <EMAIL_CONFIRM_REDIRECT_BASE_URL>/<key>
-EMAIL_CONFIRM_REDIRECT_BASE_URL = \
-    "http://localhost:3000/email/confirm/"
-
-# <PASSWORD_RESET_CONFIRM_REDIRECT_BASE_URL>/<uidb64>/<token>/
-PASSWORD_RESET_CONFIRM_REDIRECT_BASE_URL = \
-    "http://localhost:3000/password-reset/confirm/"
-
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=3),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=5),
+    'AUTH_HEADER_TYPES': ('JWT',),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": False,
+    "UPDATE_LAST_LOGIN": True,
 }
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+
+# frontend configurations
+DOMAIN = 'example.com'
+SITE_NAME = 'Foo Website'
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+# ACCOUNT_EMAIL_REQUIRED = True
+# ACCOUNT_USERNAME_REQUIRED = False
+# ACCOUNT_UNIQUE_EMAIL = True
+# ACCOUNT_AUTHENTICATION_METHOD = 'email'
+# ACCOUNT_EMAIL_VERIFICATION = 'optional'
+
+# REST_AUTH = {
+#     'LOGIN_SERIALIZER': 'users.serializers.LoginSerializer', 
+#     'REGISTER_SERIALIZER': 'users.serializers.CustomRegisterSerializer',
+    
+#     'TOKEN_MODEL': None,
+
+#     'USE_JWT': True,
+#     'JWT_AUTH_HTTPONLY': False,
+# }
+
+# APPEND_SLASH=False
+
+# # <EMAIL_CONFIRM_REDIRECT_BASE_URL>/<key>
+# EMAIL_CONFIRM_REDIRECT_BASE_URL = \
+#     "http://localhost:3000/email/confirm/"
+
+# # <PASSWORD_RESET_CONFIRM_REDIRECT_BASE_URL>/<uidb64>/<token>/
+# PASSWORD_RESET_CONFIRM_REDIRECT_BASE_URL = \
+#     "http://localhost:3000/password-reset/confirm/"
+
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# SIMPLE_JWT = {
+#     "ACCESS_TOKEN_LIFETIME": timedelta(days=3),
+#     "REFRESH_TOKEN_LIFETIME": timedelta(days=5),
+# }
+
+
+# These settings will be used in your email templates
