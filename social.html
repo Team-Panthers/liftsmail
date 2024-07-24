@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google OAuth2 Authentication</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <h1>Google OAuth2 Authentication</h1>
+    <button id="google-auth-btn">Login with Google</button>
+
+    <script>
+        document.getElementById('google-auth-btn').addEventListener('click', function () {
+            axios.get("http://127.0.0.1:8000/auth/o/google-oauth2/?redirect_uri=http://localhost:3000")
+                .then(function (response) {
+                    // Assuming the response contains the redirect URL
+                    console.log(response)
+                    window.location.href = response.data.authorization_url;
+                })
+                .catch(function (error) {
+                    console.error('There was an error!', error);
+                });
+        });
+    </script>
+</body>
+</html>
