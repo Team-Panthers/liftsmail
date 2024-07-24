@@ -47,12 +47,6 @@ INSTALLED_APPS = [
     'djoser',
     'social_django',
     "corsheaders",
-    # 'dj_rest_auth',
-    # "allauth",
-    # "allauth.account",
-    # "allauth.socialaccount",
-    # "allauth.socialaccount.providers.google",
-    # 'dj_rest_auth.registration',
     'drf_yasg',
     
     # installed apps
@@ -106,15 +100,15 @@ DATABASES = {
     }
 }
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': "nzksrilc",
-#         'USER': "nzksrilc",
-#         'PASSWORD':"TzaqUbD8aDjDgacJBQlAx8q-l8iio11M",
-#         'HOST': "bubble.db.elephantsql.com",
-#     }
-# }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': "nzksrilc",
+        'USER': "nzksrilc",
+        'PASSWORD':"TzaqUbD8aDjDgacJBQlAx8q-l8iio11M",
+        'HOST': "bubble.db.elephantsql.com",
+    }
+}
 
 
 # Password validation
