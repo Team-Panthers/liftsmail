@@ -5,7 +5,8 @@ from .views import (
     InitiatePaymentView,
     SubscriptionStatusView,
     SubscriptionPlanViewSet,
-    paystack_webhook
+    paystack_webhook,
+    UnsubscribeView
 )
 
 router = DefaultRouter()
@@ -16,6 +17,6 @@ urlpatterns = [
     path('plans/', SubscriptionPlanListView.as_view(), name='subscription_plans'),
     path('initiate-payment/<int:plan_id>/', InitiatePaymentView.as_view(), name='initiate_payment'),
     path('subscription-status/', SubscriptionStatusView.as_view(), name='subscription_status'),
-    # path('unsubscribe/', UnsubscribeView.as_view(), name='unsubscribe'),
+    path('unsubscribe/', UnsubscribeView.as_view(), name='unsubscribe'),
     path('webhook/', paystack_webhook, name='paystack_webhook'),
 ]

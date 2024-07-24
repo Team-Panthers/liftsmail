@@ -31,6 +31,10 @@
     ```
         python manage.py migrate
     ```
+-   Run management command to create a default free plan:
+    ```
+        python manage.py create_free_plan
+    ```
 
 ### 3. Create a Branch
 -   Create a new branch for your feature or bug fix:

@@ -1,4 +1,6 @@
+from django.core.exceptions import ObjectDoesNotExist
 from django.views.decorators.csrf import csrf_exempt
+from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.contrib.auth.models import User
 from rest_framework.decorators import api_view
@@ -15,6 +17,8 @@ from .services import (
     is_user_subscription_active,
     initiate_payment,
     update_user_subscription,
+    deactivate_user_subscription,
+    handle_subscription_deactivation
 )
 
 
@@ -99,19 +103,62 @@ class SubscriptionStatusView(generics.RetrieveAPIView):
         return user_subscription(self.request.user)[0]
 
 
-# class UnsubscribeView(generics.GenericAPIView):
-#     permission_classes = [IsAuthenticated]
+class UnsubscribeView(generics.GenericAPIView):
+    permission_classes = [IsAuthenticated]
 
-#     def post(self, request):
-#         user_subscription = user_subscription(request.user)[0]
-#         if is_user_subscription_active(user_subscription):
-#             deactivate_user_subscription(user_subscription)
-#             return Response(
-#                 {"detail": "Unsubscribed successfully."},
-#                 status=status.HTTP_200_OK
-#                 )
-#         else:
-#             return Response(
-#                 {"detail": "No active subscription found."},
-#                 status=status.HTTP_400_BAD_REQUEST
-#                 )
+    def post(self, request):
+        try:
+            # Retrieve or create the user subscription instance
+            user_subscription_instance = user_subscription(request.user)[0]
+
+            end_date = user_subscription_instance.subscription_end_date
+            
+            # Check if the subscription is already deactivated
+            if not user_subscription_instance.will_renew:
+                
+                return Response(
+                    {
+                        "detail": f"Subscription has already been deactivated. It will revert to the free plan after {end_date}."
+                    },
+                    status=status.HTTP_200_OK
+                )
+            
+             # Deactivate the subscription
+            deactivate_user_subscription(user_subscription_instance)
+            
+            # Check if subscription is still active and today's date is not past the end date
+            today = timezone.now().date()
+            if is_user_subscription_active(user_subscription_instance) and today <= user_subscription_instance.subscription_end_date:
+                
+                return Response(
+                    {
+                        "detail": f"Unsubscribed successfully. Your subscription will be deactivated after {end_date}."
+                    },
+                    status=status.HTTP_200_OK
+                )
+            else:
+                # Handle transition to free plan
+                handle_subscription_deactivation(user_subscription_instance)
+                
+                return Response(
+                    {
+                        "detail": f"Subscription ended. Switched to the free plan."
+                    },
+                    status=status.HTTP_200_OK
+                )
+        
+        except ObjectDoesNotExist:
+            # Handle case where the user subscription does not exist
+            return Response(
+                {"detail": "Subscription record not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        except Exception as e:
+            # Handle any other exceptions
+            return Response(
+                {"detail": f"An error occurred: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
