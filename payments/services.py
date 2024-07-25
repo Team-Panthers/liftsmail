@@ -48,5 +48,49 @@ def update_user_subscription(user_subscription, plan):
     user_subscription.save()
 
 def deactivate_user_subscription(user_subscription):
+    # Deactivate now but do not switch plan until end date
     user_subscription.will_renew = False
     user_subscription.save()
+
+def transition_to_free_plan(user_subscription):
+    free_plan = SubscriptionPlan.objects.get(name='Free Plan')
+    user_subscription.plan = free_plan
+    # Assign 1 month for the free plan
+    user_subscription.subscription_end_date = timezone.now().date() + relativedelta(months=1)
+    user_subscription.save()
+
+def handle_subscription_deactivation(user_subscription):
+    if not is_user_subscription_active(user_subscription):
+        # If subscription has ended, transition to free plan
+        transition_to_free_plan(user_subscription)
+
+
+
+def check_and_update_subscriptions():
+    # Get today's date
+    today = timezone.now().date()
+    
+    # Query for subscriptions that:
+    # 1. Are marked as not renewing (will_renew=False).
+    # 2. Have an end date that is today or has already passed (subscription_end_date__lte=today).
+    subscriptions = UserSubscription.objects.filter(
+        will_renew=False,
+        subscription_end_date__lte=today
+    )
+
+    # Retrieve the Free Plan object from the database
+    # This assumes there is a SubscriptionPlan object with the name 'Free Plan'
+    free_plan = SubscriptionPlan.objects.get(name='Free Plan')
+
+    for subscription in subscriptions:
+        # Update the user subscription to the Free Plan
+        subscription.plan = free_plan
+        
+        # Set a new subscription end date to 1 month from today
+        subscription.subscription_end_date = today + relativedelta(months=1)
+        
+        # Mark the subscription as renewing (will_renew=True) since it's now on the Free Plan
+        subscription.will_renew = True
+        
+        # Save the updated subscription details to the database
+        subscription.save()

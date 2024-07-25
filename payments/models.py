@@ -1,7 +1,11 @@
 from django.db import models
-from django.contrib.auth.models import User
 from dateutil.relativedelta import relativedelta
 from django.utils import timezone
+
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
 
 
 class SubscriptionPlan(models.Model):
@@ -21,7 +25,7 @@ class UserSubscription(models.Model):
     email_sessions_used = models.PositiveIntegerField(default=0)
     subscription_start_date = models.DateField(auto_now_add=True)
     subscription_end_date = models.DateField()
-    # will_renew = models.BooleanField(default=True)
+    will_renew = models.BooleanField(default=True)
 
     def __str__(self):
         return f'{self.user.username} - {self.plan.name}'
