@@ -103,36 +103,56 @@ class SubscriptionStatusView(generics.RetrieveAPIView):
         return user_subscription(self.request.user)[0]
 
 
+
 class UnsubscribeView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        email = request.data.get('email')
+        if not email:
+            return Response(
+                {"detail": "Email is required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if email != request.user.email:
+            return Response(
+                {"detail": "You can only unsubscribe yourself."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
         try:
             # Retrieve or create the user subscription instance
             user_subscription_instance = user_subscription(request.user)[0]
-
-            end_date = user_subscription_instance.subscription_end_date
+            
+            # Retrieve the Free Plan object from the database
+            free_plan = SubscriptionPlan.objects.get(name='Free Plan')
+            
+            # Check if the user is already on the Free Plan
+            if user_subscription_instance.plan == free_plan:
+                return Response(
+                    {"detail": "You are already on the Free Plan."},
+                    status=status.HTTP_200_OK
+                )
             
             # Check if the subscription is already deactivated
             if not user_subscription_instance.will_renew:
-                
                 return Response(
                     {
-                        "detail": f"Subscription has already been deactivated. It will revert to the free plan after {end_date}."
+                        "detail": f"Subscription has already been deactivated. It will revert to the free plan after {user_subscription_instance.subscription_end_date}."
                     },
                     status=status.HTTP_200_OK
                 )
             
-             # Deactivate the subscription
+            # Deactivate the subscription
             deactivate_user_subscription(user_subscription_instance)
             
             # Check if subscription is still active and today's date is not past the end date
             today = timezone.now().date()
             if is_user_subscription_active(user_subscription_instance) and today <= user_subscription_instance.subscription_end_date:
-                
                 return Response(
                     {
-                        "detail": f"Unsubscribed successfully. Your subscription will be deactivated after {end_date}."
+                        "detail": f"Unsubscribed successfully. Your subscription will be deactivated after {user_subscription_instance.subscription_end_date}."
                     },
                     status=status.HTTP_200_OK
                 )
@@ -142,7 +162,7 @@ class UnsubscribeView(generics.GenericAPIView):
                 
                 return Response(
                     {
-                        "detail": f"Subscription ended. Switched to the free plan."
+                        "detail": "Subscription ended. Switched to the free plan."
                     },
                     status=status.HTTP_200_OK
                 )
@@ -160,5 +180,4 @@ class UnsubscribeView(generics.GenericAPIView):
                 {"detail": f"An error occurred: {str(e)}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-
 

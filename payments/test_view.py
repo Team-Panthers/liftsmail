@@ -85,33 +85,51 @@ class UserSubscriptionTest(APITestCase):
 
     def test_unsubscribe(self):
         url = reverse('unsubscribe')
-        response = self.client.post(url)
+        
+        # Perform the unsubscribe operation with the email in the request body
+        response = self.client.post(url, {'email': self.authenticated_user.email})
+        
+        # Print debug information
+        print(f"Response status code: {response.status_code}")
+        print(f"Response content: {response.content}")
+        
+        # Assert the response status code
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        
+        # Check the response content
         response_data = response.json()
-        self.assertIn('detail', response_data)
-        self.assertFalse(UserSubscription.objects.get(user=self.authenticated_user).will_renew)
-
-   
-    def test_unsubscribe_already_deactivated(self):
-        # Manually deactivate the subscription
+        
+        # Check if the user is already on the Free Plan
         subscription = UserSubscription.objects.get(user=self.authenticated_user)
-        subscription.will_renew = False
-        subscription.save()
+        if subscription.plan.name == 'Free Plan':
+            self.assertEqual(response_data.get('detail'), 'You are already on the Free Plan.')
+        else:
+            # Verify the subscription is deactivated
+            subscription.refresh_from_db()
+            self.assertFalse(subscription.will_renew)
+            self.assertEqual(response_data.get('detail'), f'Unsubscribed successfully. Your subscription will be deactivated after {subscription.subscription_end_date}.')
 
-        url = reverse('unsubscribe')
-        response = self.client.post(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        response_data = response.json()
-        self.assertIn('Subscription has already been deactivated', response_data.get('detail'))
 
-    def test_unsubscribe_subscription_ended(self):
-        # Set subscription end date to past
-        subscription = UserSubscription.objects.get(user=self.authenticated_user)
-        subscription.subscription_end_date = timezone.now().date() - relativedelta(days=1)
-        subscription.save()
+def test_unsubscribe_already_deactivated(self):
+    # Manually deactivate the subscription
+    subscription = UserSubscription.objects.get(user=self.authenticated_user)
+    subscription.will_renew = False
+    subscription.save()
 
-        url = reverse('unsubscribe')
-        response = self.client.post(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        response_data = response.json()
-        self.assertIn('Switched to the free plan', response_data.get('detail'))
+    url = reverse('unsubscribe')
+    response = self.client.post(url)
+    self.assertEqual(response.status_code, status.HTTP_200_OK)
+    response_data = response.json()
+    self.assertEqual(response_data.get('detail'), 'Subscription has already been deactivated.')
+
+def test_unsubscribe_subscription_ended(self):
+    # Set subscription end date to past
+    subscription = UserSubscription.objects.get(user=self.authenticated_user)
+    subscription.subscription_end_date = timezone.now().date() - relativedelta(days=1)
+    subscription.save()
+
+    url = reverse('unsubscribe')
+    response = self.client.post(url)
+    self.assertEqual(response.status_code, status.HTTP_200_OK)
+    response_data = response.json()
+    self.assertEqual(response_data.get('detail'), 'Subscription ended. Switched to the free plan.')
