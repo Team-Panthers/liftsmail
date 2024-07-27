@@ -52,13 +52,8 @@ def format_email(message, context):
     finally:
         # Remove the temporary file
         if os.path.exists(temp_file_path):
-            # os.remove(temp_file_path)
-            pass
-    
+            os.remove(temp_file_path)
     return rendered_content
-
-
-
 
 def send_email(subject, message, recipient):
     """
@@ -76,3 +71,5 @@ def send_email(subject, message, recipient):
     )
     email.content_subtype = "html"
     email.send()
+
+

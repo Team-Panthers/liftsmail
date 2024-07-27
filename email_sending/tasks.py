@@ -7,7 +7,3 @@ from email_sending.utils import send_email
 def send_email_task(subject, message, recipient):
     print(f"Sending email to {recipient} with subject: {subject}")
     send_email(subject, message, recipient)
-
-@shared_task
-def add(x, y):
-    return x + y
