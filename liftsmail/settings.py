@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 from datetime import timedelta
 import os
 from pathlib import Path
+from decouple import config
 
 
 
@@ -27,7 +28,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure--o6-l79qznbfp_lsi*=&gcui-a1dp(b+#d(-l2o#@2_x^63oxm'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config("DEBUG", cast=bool, default=False)
 
 ALLOWED_HOSTS = []
 
@@ -48,11 +49,13 @@ INSTALLED_APPS = [
     'social_django',
     "corsheaders",
     'drf_yasg',
+    'django_celery_beat',
+    'django_celery_results',
     
     # installed apps
     'users.apps.UsersConfig',
     'emails.apps.EmailsConfig',
-    'email_sending.apps.EmailSendingConfig',
+    'email_sending',
 ]
 
 MIDDLEWARE = [
@@ -95,8 +98,11 @@ WSGI_APPLICATION = 'liftsmail.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': config('DB_NAME'),
+        'USER': config('DB_USER'),
+        'PASSWORD':config('DB_PASSWORD'),
+        'HOST': config('DB_HOST'),
     }
 }
 
@@ -257,4 +263,13 @@ AUTHENTICATION_BACKENDS = (
 # cors header settings
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
+
+
+CELERY_BROKER_URL = config('CELERY_BROKER_REDIS_URL', default='redis://cache:6379')
+
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers.DatabaseScheduler'
+
+CELERY_RESULT_BACKEND = 'redis://cache:6379'
+
+CELERY_TIMEZONE = 'UTC'
 

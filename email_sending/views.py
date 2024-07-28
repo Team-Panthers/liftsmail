@@ -1,123 +1,123 @@
-from .serializers import EmailTemplatesSerializers,SendMailSerializer
+import json
+from .serializers import EmailTemplatesSerializers, ScheduleMailSerializer, EmailSessionSerializer, SendNowSerializer
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.views import APIView
-from .models import EmailTemplate
+from .models import EmailTemplate, EmailSession
 from liftsmail.permissions import IsOwner
 from emails.models import Group
-from django.template.loader import render_to_string
 from rest_framework.response import Response
-
+from .utils import format_email, send_email
+from email_sending.tasks import send_email_task
+from django_celery_beat.models import PeriodicTask, CrontabSchedule
 
 class EmailTemplatesListCreateApiView(generics.ListCreateAPIView):
     queryset = EmailTemplate.objects.all()
     serializer_class = EmailTemplatesSerializers
-    permission_classes = [IsAuthenticated,IsOwner]
-    
-    
+    permission_classes = [IsAuthenticated, IsOwner]
+
+    def get_queryset(self):
+        return  EmailTemplate.objects.filter(user=self.request.user)
+
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
         return super().perform_create(serializer)
+
+class EmailTemplateDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = EmailTemplate.objects.all()
+    serializer_class = EmailTemplatesSerializers
+    permission_classes = [IsAuthenticated, IsOwner]
+
+    def get_queryset(self):
+        # user to ensure that users can only access their own templates
+        return EmailTemplate.objects.filter(user=self.request.user)
     
-    
-class SendMail(generics.CreateAPIView):
-    serializer_class = SendMailSerializer
-    queryset = []
-    # user prodviude the group hen wannt to send and also the email template to used
-    def post(self,request,*args, **kwargs):
-        serializer = SendMailSerializer(data=request.data)
+
+class SendMailNowView(generics.CreateAPIView):
+    serializer_class = SendNowSerializer
+    permission_classes = [IsAuthenticated]
+    queryset = EmailSession.objects.all()
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        group_id = serializer.validated_data['group_id']
-        template_id = serializer.validated_data['template_id']
-        
-        group = Group.objects.get(id= group_id)
-        email_template = EmailTemplate.objects.get(id=template_id)
-        
-        
-        message = email_template.body
-        subject = email_template.subject
-        
+
+        template = serializer.validated_data['template']
+        group = serializer.validated_data['group_id']
+
+        message = template.body
+        subject = template.subject
+
         contacts = group.contacts.all()
-        
-        
+
+        if not contacts:
+            return Response({"detail": "This group has no contacts"}, status=400)
         
         for contact in contacts:
             context = {
-                "first_name":contact.first_name if contact.first_name else "Guest",
-                'last_name':contact.last_name ,
-                'email':contact.email,
-                "contact_id":contact.id
+                "first_name": contact.first_name if contact.first_name else "Guest",
+                'last_name': contact.last_name if contact.last_name else "Guest",
+                'email': contact.email,
+                "contact_id": contact.id
             }
-            new_message = format_email(message,context)
-            
-            print(new_message)
-            
-            
-            # send(messge=new_message,subject=subject,email=contact.email)
-            
-        return Response({"message":new_message})
+            new_message = format_email(message, context)
+            send_email_task.delay(message=new_message, subject=subject, recipient=contact.email)
         
-        
-        
-        
-      
-      
-      
-import os
-from django.template.loader import render_to_string
-import tempfile
-import random
-import string
-      
-        
-def format_email(message, context):
-    """
-    Renders the email template content with the given context.
-    
-    Args:
-        message (str): The email message content.
-        context (dict): The context data to render the template.
-    
-    Returns:
-        str: The rendered email content.
-    """
-    # Generate a unique filename
-    contact_id = context.get('contact_id')
-    filename = generate_html_file_name(contact_id)
-    
-    # Create a temporary file
-    temp_file_path = os.path.join('templates', filename)
-    
-    try:
-        # Write the message content to the temporary file
-        with open(temp_file_path, 'w') as file:
-            file.write(message)
-        
-        # Render the template with context
-        rendered_content = render_to_string(filename, context)
-        print(rendered_content)
-    
-    finally:
-        # Remove the temporary file
-        if os.path.exists(temp_file_path):
-            os.remove(temp_file_path)
-    
-    return rendered_content
+        return Response({"message": "Emails sent successfully"})
+
+class ScheduleMailView(generics.CreateAPIView):
+    serializer_class = ScheduleMailSerializer
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        email_template = serializer.validated_data['template_id']
+        group = serializer.validated_data['group_id']
+        is_scheduled = serializer.validated_data['is_scheduled']
+        schedule_time = serializer.validated_data['schedule_time']
+
+        contacts = group.contacts.all()
+
+        if not contacts:
+            return Response({"detail": "This group has no contacts"}, status=400)
+
+        subject = email_template.subject
+        message = email_template.body
+
+        for contact in contacts:
+            context = {
+                "first_name": contact.first_name if contact.first_name else "Guest",
+                'last_name': contact.last_name if contact.last_name else "Guest",
+                'email': contact.email,
+                "contact_id": contact.id
+            }
+            new_message = format_email(message, context)
+
+            if is_scheduled:
+                schedule, created = CrontabSchedule.objects.get_or_create(
+                    minute=schedule_time.minute,
+                    hour=schedule_time.hour,
+                    day_of_month=schedule_time.day,
+                    month_of_year=schedule_time.month,
+                    day_of_week=schedule_time.strftime('%w')
+                )
+                PeriodicTask.objects.create(
+                    crontab=schedule,
+                    name=f'send-email-{contact.id}-{schedule_time}',
+                    task='email_sending.tasks.send_email_task',
+                    args=json.dumps([new_message, subject, contact.email]),
+                )
+            else:
+                send_email_task.delay(message=new_message, subject=subject, recipient=contact.email)
+
+        return Response({"message": "Emails scheduled" if is_scheduled else "Emails sent successfully"})
 
 
-def generate_html_file_name(identifier):
-    """
-    Generates a unique filename based on the given identifier and a random 15-character alphanumeric string.
-    
-    Args:
-        identifier (str): The identifier to use in the filename.
-    
-    Returns:
-        str: The generated filename with a random 15-character string.
-    """
-    # Generate a random 15-character alphanumeric string
-    random_string = ''.join(random.choices(string.ascii_letters + string.digits, k=15))
-    
-    # Combine the identifier and random string to create the filename
-    return f"emailtemplate_{identifier}_{random_string}.html"
-        
+class EmailSessionView(generics.ListAPIView):
+    queryset  = EmailSession.objects.all()
+    serializer_class = EmailSessionSerializer
+    permission_classes = [IsAuthenticated, IsOwner]
+
+    def get_queryset(self):
+        return EmailSession.objects.filter(user=self.request.user)
