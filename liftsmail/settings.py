@@ -45,12 +45,9 @@ INSTALLED_APPS = [
     
     # 3rd party apps
     'rest_framework',
-    'dj_rest_auth',
-    "allauth",
-    "allauth.account",
-    "allauth.socialaccount",
-    "allauth.socialaccount.providers.google",
-    'dj_rest_auth.registration',
+    'djoser',
+    'social_django',
+    "corsheaders",
     'drf_yasg',
     'django_celery_beat',
     'django_celery_results',
@@ -64,12 +61,13 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    "allauth.account.middleware.AccountMiddleware",
+    "social_django.middleware.SocialAuthExceptionMiddleware",
 ]
 
 ROOT_URLCONF = 'liftsmail.urls'
@@ -85,6 +83,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                "social_django.context_processors.backends",
+                "social_django.context_processors.login_redirect",
             ],
         },
     },
@@ -106,6 +106,16 @@ DATABASES = {
     }
 }
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': "nzksrilc",
+#         'USER': "nzksrilc",
+#         'PASSWORD':"TzaqUbD8aDjDgacJBQlAx8q-l8iio11M",
+#         'HOST': "bubble.db.elephantsql.com",
+#     }
+# }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -122,6 +132,15 @@ AUTH_PASSWORD_VALIDATORS = [
     },
     {
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+    },
+]
+
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'OPTIONS': {
+            'min_length': 5,
+        }
     },
 ]
 
@@ -154,7 +173,7 @@ AUTH_USER_MODEL = "users.CustomUser"
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ]
 }
@@ -169,39 +188,82 @@ SWAGGER_SETTINGS = {
     }
 }
 
-ACCOUNT_USER_MODEL_USERNAME_FIELD = None
-ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_USERNAME_REQUIRED = False
-ACCOUNT_UNIQUE_EMAIL = True
-ACCOUNT_AUTHENTICATION_METHOD = 'email'
-ACCOUNT_EMAIL_VERIFICATION = 'optional'
 
-REST_AUTH = {
-    'LOGIN_SERIALIZER': 'users.serializers.LoginSerializer', 
-    'REGISTER_SERIALIZER': 'users.serializers.CustomRegisterSerializer',
-    
+# Djoser settings
+DJOSER = {
+    'LOGIN_FIELD': 'email',
+    'SEND_ACTIVATION_EMAIL': True,
+    'SEND_CONFIRMATION_EMAIL': True,
+    'PASSWORD_CHANGED_EMAIL_CONFIRMATION':True,
     'TOKEN_MODEL': None,
-
-    'USE_JWT': True,
-    'JWT_AUTH_HTTPONLY': False,
+    'PASSWORD_RESET_SHOW_EMAIL_NOT_FOUND': True,
+    "ACTIVATION_URL": 'activate/{uid}/{token}',
+    "PASSWORD_RESET_CONFIRM_URL": '#/password-reset/{uid}/{token}',
+    'USERNAME_RESET_CONFIRM_URL': '/username-reset/{uid}/{token}',
+    "SOCIAL_AUTH_TOKEN_STRATEGY": "djoser.social.token.jwt.TokenStrategy",
+    "SOCIAL_AUTH_ALLOWED_REDIRECT_URIS": ["http://localhost:3000"],
+    'SERIALIZERS': 
+        {
+        'activation': 'djoser.serializers.ActivationSerializer',
+        'password_reset': 'djoser.serializers.SendEmailResetSerializer',
+        'password_reset_confirm': 'djoser.serializers.PasswordResetConfirmSerializer',
+        'password_reset_confirm_retype': 'djoser.serializers.PasswordResetConfirmRetypeSerializer',
+        'set_password': 'djoser.serializers.SetPasswordSerializer',
+        'set_password_retype': 'djoser.serializers.SetPasswordRetypeSerializer',
+        'set_username': 'djoser.serializers.SetUsernameSerializer',
+        'set_username_retype': 'djoser.serializers.SetUsernameRetypeSerializer',
+        'username_reset': 'djoser.serializers.SendEmailResetSerializer',
+        'username_reset_confirm': 'djoser.serializers.UsernameResetConfirmSerializer',
+        'username_reset_confirm_retype': 'djoser.serializers.UsernameResetConfirmRetypeSerializer',
+        'user_create': "users.serializers.UserCreateSerializer",
+        'user_create_password_retype': 'djoser.serializers.UserCreatePasswordRetypeSerializer',
+        'user_delete': 'djoser.serializers.UserDeleteSerializer',
+        'user': "users.serializers.UserCreateSerializer",
+        'current_user': "users.serializers.UserCreateSerializer",
+    }
 }
 
-APPEND_SLASH=False
-
-# <EMAIL_CONFIRM_REDIRECT_BASE_URL>/<key>
-EMAIL_CONFIRM_REDIRECT_BASE_URL = \
-    "http://localhost:3000/email/confirm/"
-
-# <PASSWORD_RESET_CONFIRM_REDIRECT_BASE_URL>/<uidb64>/<token>/
-PASSWORD_RESET_CONFIRM_REDIRECT_BASE_URL = \
-    "http://localhost:3000/password-reset/confirm/"
-
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=3),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=5),
+    'AUTH_HEADER_TYPES': ('JWT',),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": False,
+    "UPDATE_LAST_LOGIN": True,
 }
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+
+# frontend configurations
+DOMAIN = 'example.com'
+SITE_NAME = 'Foo Website'
+
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '1070158787657-n777fka8l40af7e53jlcjkkmg0n7g7ko.apps.googleusercontent.com'
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = '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'
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
+    "https://www.googleapis.com/auth/userinfo.email",
+    "https://www.googleapis.com/auth/userinfo.profile",
+    "openid",
+]
+SOCIAL_AUTH_GOOGLE_OAUTH2_EXTRA_DATA = ["first_name", "last_name"]
+
+
+
+AUTHENTICATION_BACKENDS = (
+    'social_core.backends.google.GoogleOAuth2',
+    'django.contrib.auth.backends.ModelBackend',
+)
+
+
+
+# cors header settings
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
+
 
 CELERY_BROKER_URL = config('CELERY_BROKER_REDIS_URL', default='redis://cache:6379')
 

@@ -24,7 +24,9 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 
     path('auth/', include("users.urls")),
+    # path('auth/', include('djoser.urls')),
     path('groups/', include("emails.urls")),
-    path("emails/",include('email_sending.urls'))
+    path("emails/",include('email_sending.urls')),
+    # path('auth/', include('djoser.urls.jwt')),
 ]
 
