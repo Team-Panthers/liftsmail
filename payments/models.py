@@ -28,4 +28,4 @@ class UserSubscription(models.Model):
     will_renew = models.BooleanField(default=True)
 
     def __str__(self):
-        return f'{self.user.username} - {self.plan.name}'
+        return f'{self.user.email} - {self.plan.name}'

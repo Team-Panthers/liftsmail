@@ -31,9 +31,9 @@
     ```
         python manage.py migrate
     ```
--   Run management command to create a default free plan:
+-   Run management command to create all plans:
     ```
-        python manage.py create_free_plan
+        python manage.py create_plans
     ```
 
 ### 3. Create a Branch
