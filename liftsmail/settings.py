@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     # installed apps
     'users.apps.UsersConfig',
     'emails.apps.EmailsConfig',
+    'payments.apps.PaymentsConfig',
     'email_sending',
 ]
 
@@ -203,6 +204,8 @@ SIMPLE_JWT = {
     "REFRESH_TOKEN_LIFETIME": timedelta(days=5),
 }
 
+PAYSTACK_KEY = config('PAYSTACK_KEY')
+
 CELERY_BROKER_URL = config('CELERY_BROKER_REDIS_URL', default='redis://cache:6379')
 
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers.DatabaseScheduler'
@@ -210,4 +213,3 @@ CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers.DatabaseScheduler'
 CELERY_RESULT_BACKEND = 'redis://cache:6379'
 
 CELERY_TIMEZONE = 'UTC'
-

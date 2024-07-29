@@ -31,6 +31,10 @@
     ```
         python manage.py migrate
     ```
+-   Run management command to create all plans:
+    ```
+        python manage.py create_plans
+    ```
 
 ### 3. Create a Branch
 -   Create a new branch for your feature or bug fix:
