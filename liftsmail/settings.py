@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 from datetime import timedelta
 import os
 from pathlib import Path
+from decouple import config
 
 
 
@@ -196,5 +197,4 @@ SIMPLE_JWT = {
     "REFRESH_TOKEN_LIFETIME": timedelta(days=5),
 }
 
-PAYSTACK_PUBLIC_KEY=os.environ.get('PAYSTACK_PUBLIC_KEY')
-PAYSTACK_PRIVATE_KEY=os.environ.get('PAYSTACK_PRIVATE_KEY')
+PAYSTACK_KEY = config('PAYSTACK_KEY')

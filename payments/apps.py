@@ -6,6 +6,5 @@ class PaymentsConfig(AppConfig):
     name = 'payments'
 
     def ready(self):
-        import payments.signals 
         from .scheduler import start_scheduler
         start_scheduler()
