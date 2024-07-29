@@ -33,3 +33,6 @@ typing_extensions==4.12.2
 tzdata==2024.1
 uritemplate==4.1.1
 urllib3==2.2.2
+APScheduler==3.10.4
+python-decouple==3.8
+celery
