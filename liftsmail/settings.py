@@ -28,7 +28,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure--o6-l79qznbfp_lsi*=&gcui-a1dp(b+#d(-l2o#@2_x^63oxm'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config("DEBUG", cast=bool, default=False)
 
 ALLOWED_HOSTS = []
 
@@ -52,11 +52,14 @@ INSTALLED_APPS = [
     "allauth.socialaccount.providers.google",
     'dj_rest_auth.registration',
     'drf_yasg',
+    'django_celery_beat',
+    'django_celery_results',
     
     # installed apps
     'users.apps.UsersConfig',
     'emails.apps.EmailsConfig',
     'payments.apps.PaymentsConfig',
+    'email_sending',
 ]
 
 MIDDLEWARE = [
@@ -75,7 +78,7 @@ ROOT_URLCONF = 'liftsmail.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR/"templates"],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -96,8 +99,11 @@ WSGI_APPLICATION = 'liftsmail.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': config('DB_NAME'),
+        'USER': config('DB_USER'),
+        'PASSWORD':config('DB_PASSWORD'),
+        'HOST': config('DB_HOST'),
     }
 }
 
@@ -149,7 +155,8 @@ AUTH_USER_MODEL = "users.CustomUser"
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        'dj_rest_auth.jwt_auth.JWTCookieAuthentication'
+        'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
     ]
 }
 
@@ -198,3 +205,11 @@ SIMPLE_JWT = {
 }
 
 PAYSTACK_KEY = config('PAYSTACK_KEY')
+
+CELERY_BROKER_URL = config('CELERY_BROKER_REDIS_URL', default='redis://cache:6379')
+
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers.DatabaseScheduler'
+
+CELERY_RESULT_BACKEND = 'redis://cache:6379'
+
+CELERY_TIMEZONE = 'UTC'

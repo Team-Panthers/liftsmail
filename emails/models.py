@@ -29,3 +29,5 @@ class Contact(TimeStampBaseModel):
     class Meta:
         ordering = ['-created_at']
 
+
+
